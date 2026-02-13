@@ -96,10 +96,6 @@ struct HomeView: View {
     }
 }
 
-#Preview {
-    HomeView()
-}
-
 struct StatusCard: View {
     
     let icon: String
