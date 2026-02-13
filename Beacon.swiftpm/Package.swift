@@ -10,7 +10,7 @@ import AppleProductTypes
 let package = Package(
     name: "Beacon",
     platforms: [
-        .iOS("17.0")
+        .iOS("18.0")
     ],
     products: [
         .iOSApplication(
@@ -20,7 +20,7 @@ let package = Package(
             teamIdentifier: "V2F9G4736H",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .location),
+            appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.cyan),
             supportedDeviceFamilies: [
                 .pad,
@@ -33,9 +33,9 @@ let package = Package(
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
             capabilities: [
-                .bluetoothAlways(purposeString: "For offline communication."),
-                .localNetwork(purposeString: "For peer discovery.", bonjourServiceTypes: ["_beacon-mesh._tcp", "_beacon-mesh._udp"]),
-                .locationWhenInUse(purposeString: "Unknown Usage Description")
+                .bluetoothAlways(purposeString: "Bluetooth allows Beacon to form an offline emergency network with nearby devices."),
+                .localNetwork(purposeString: "Local network access enables Beacon to share emergency data with nearby devices.", bonjourServiceTypes: ["_beacon-mesh._tcp", "_beacon-mesh._udp"]),
+                .locationWhenInUse(purposeString: "Your location is used to help nearby people see where you are during an emergency.")
             ],
             appCategory: "public.app-category.navigation"
         )
@@ -46,5 +46,5 @@ let package = Package(
             path: "."
         )
     ],
-    swiftLanguageModes: [.version("6")]
+    swiftLanguageVersions: [.version("6")]
 )
