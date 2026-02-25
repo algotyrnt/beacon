@@ -9,9 +9,8 @@ import SwiftUI
 
 struct HomeView: View {
     
-    @State private var isActive = false
-    @StateObject var engine = BeaconEngine()
-    @StateObject var locationManager = LocationManager()
+    @EnvironmentObject var engine: BeaconEngine
+    @EnvironmentObject var locationManager: LocationManager
     
     var body: some View {
         NavigationStack {
@@ -35,19 +34,23 @@ struct HomeView: View {
                     // MARK: - Activate Card
                     VStack(spacing: 15) {
                         
-                        Text(isActive ? "Beacon Active" : "Beacon Inactive")
+                        Text(engine.isRunning ? "Beacon Active" : "Beacon Inactive")
                             .font(.title2.bold())
                         
                         Button {
                             withAnimation {
-                                isActive.toggle()
+                                if engine.isRunning {
+                                    engine.stop()
+                                } else {
+                                    engine.start()
+                                }
                             }
                         } label: {
-                            Text(isActive ? "Deactivate" : "Activate Beacon")
+                            Text(engine.isRunning ? "Deactivate" : "Activate Beacon")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(isActive ? .red : .blue)
+                                .background(engine.isRunning ? .red : .blue)
                                 .foregroundStyle(.white)
                                 .cornerRadius(16)
                         }
@@ -62,13 +65,13 @@ struct HomeView: View {
                         StatusCard(
                             icon: "person.2.fill",
                             title: "Peers",
-                            value: "0"
+                            value: "\(engine.connectedPeers.count)"
                         )
                         
                         StatusCard(
                             icon: "location.fill",
                             title: "Broadcast",
-                            value: "Off"
+                            value: engine.isRunning ? "On" : "Off"
                         )
                     }
                     
@@ -91,8 +94,8 @@ struct HomeView: View {
             .navigationTitle("Home")
         }
         .onAppear {
-            engine.start()
-            locationManager.requestPermission()}
+            locationManager.requestPermission()
+        }
     }
 }
 
