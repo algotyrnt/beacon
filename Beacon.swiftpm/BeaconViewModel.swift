@@ -15,22 +15,27 @@ final class BeaconViewModel: ObservableObject {
     @Published var peers: [BeaconPacket] = []
     @Published var myStatus: BeaconPacket.Status = .normal
     
-    let engine = BeaconEngine()
-    let locationManager = LocationManager()
+    private let engine: BeaconEngine
+    private let locationManager: LocationManager
     
     private var broadcastTask: Task<Void, Never>?
+    private var cleanupTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
     
-    init() {
-        engine.start()
-        locationManager.requestPermission()
+    private let staleThreshold: TimeInterval = 15
+    
+    init(engine: BeaconEngine, locationManager: LocationManager) {
+        self.engine = engine
+        self.locationManager = locationManager
         
-        startBroadcasting()
         observeIncomingData()
+        startBroadcasting()
+        startCleanupTimer()
     }
     
     deinit {
         broadcastTask?.cancel()
+        cleanupTask?.cancel()
     }
     
     // MARK: - Broadcast
@@ -45,7 +50,7 @@ final class BeaconViewModel: ObservableObject {
         }
     }
     
-    func sendPacket() {
+    private func sendPacket() {
         guard let location = locationManager.location else { return }
         
         let packet = BeaconPacket(
@@ -62,24 +67,51 @@ final class BeaconViewModel: ObservableObject {
     }
     
     // MARK: - Receive
-    func observeIncomingData() {
-        engine.$receivedData
-            .compactMap { $0 }
+    private func observeIncomingData() {
+        engine.incomingData
             .receive(on: RunLoop.main)
-            .sink { [weak self] data in
-                guard let packet = try? JSONDecoder().decode(BeaconPacket.self, from: data) else { return }
-                self?.updatePeer(packet)
+            .sink { [weak self] payload in
+                guard let self = self else { return }
+                
+                let (data, peerID) = payload
+                
+                guard let packet = try? JSONDecoder().decode(BeaconPacket.self, from: data) else {
+                    print("Failed to decode packet from \(peerID.displayName)")
+                    return
+                }
+                
+                self.updatePeer(packet)
             }
             .store(in: &cancellables)
     }
     
-    func updatePeer(_ packet: BeaconPacket) {
+    private func updatePeer(_ packet: BeaconPacket) {
         peers.removeAll { $0.id == packet.id }
         peers.append(packet)
+    }
+    
+    // MARK: - Cleanup Routine
+    private func startCleanupTimer() {
+        cleanupTask?.cancel()
+        
+        cleanupTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 5 * 1_000_000_000)
+                
+                let now = Date()
+                self.peers.removeAll { peer in
+                    now.timeIntervalSince(peer.timestamp) > self.staleThreshold
+                }
+            }
+        }
     }
     
     // MARK: - Emergency
     func toggleHelp() {
         myStatus = myStatus == .normal ? .help : .normal
+        if myStatus == .help {
+            engine.start()
+        }
+        sendPacket()
     }
 }
