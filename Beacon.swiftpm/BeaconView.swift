@@ -10,14 +10,14 @@ import MapKit
 
 struct BeaconView: View {
     
-    @StateObject private var vm = BeaconViewModel()
+    @EnvironmentObject var vm: BeaconViewModel
+    @EnvironmentObject var locationManager: LocationManager
     
     var body: some View {
         ZStack(alignment: .bottom) {
             
             Map {
-                // Yourself
-                if let myLoc = vm.locationManager.location {
+                if let myLoc = locationManager.location {
                     Annotation("Me",
                                coordinate: myLoc.coordinate) {
                         Circle()
@@ -38,6 +38,10 @@ struct BeaconView: View {
                             .frame(width: 18, height: 18)
                     }
                 }
+            }
+            .mapControls {
+                MapUserLocationButton()
+                MapCompass()
             }
             .ignoresSafeArea()
             
@@ -66,4 +70,3 @@ struct BeaconView: View {
         }
     }
 }
-
