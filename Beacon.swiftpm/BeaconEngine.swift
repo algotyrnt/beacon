@@ -14,7 +14,8 @@ final class BeaconEngine: NSObject, ObservableObject, @unchecked Sendable {
 
     // MARK: - Public State
     @Published var connectedPeers: [MCPeerID] = []
-    @Published var receivedData: Data?
+    @Published var isRunning: Bool = false
+    public let incomingData = PassthroughSubject<(Data, MCPeerID), Never>()
 
     // MARK: - Multipeer Core
     private let serviceType = "beacon-mesh"
@@ -55,12 +56,16 @@ final class BeaconEngine: NSObject, ObservableObject, @unchecked Sendable {
 
     // MARK: - Start / Stop
     func start() {
+        guard !isRunning else { return }
+        
         advertiser.startAdvertisingPeer()
         browser.startBrowsingForPeers()
-        print("Beacon Engine Started")
+        isRunning = true
     }
 
     func stop() {
+        guard isRunning else { return }
+        
         advertiser.stopAdvertisingPeer()
         browser.stopBrowsingForPeers()
         session.disconnect()
@@ -68,7 +73,7 @@ final class BeaconEngine: NSObject, ObservableObject, @unchecked Sendable {
         Task { @MainActor in
             self.connectedPeers.removeAll()
         }
-        print("Beacon Engine Stopped")
+        isRunning = false
     }
 
     // MARK: - Send Data
@@ -107,9 +112,7 @@ extension BeaconEngine: MCSessionDelegate {
         didReceive data: Data,
         fromPeer peerID: MCPeerID
     ) {
-        Task { @MainActor in
-            self.receivedData = data
-        }
+        incomingData.send((data, peerID))
     }
 
     func session(
