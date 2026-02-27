@@ -31,24 +31,30 @@ struct ResourcesView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(filteredResources) { resource in
-                        Button {
-                            selectedResource = resource
-                        } label: {
-                            ResourceCard(resource: resource)
-                                .frame(height: 140)
+            Group {
+                if filteredResources.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 16) {
+                            ForEach(filteredResources) { resource in
+                                Button {
+                                    selectedResource = resource
+                                } label: {
+                                    ResourceCard(resource: resource)
+                                        .frame(height: 140)
+                                }
+                                .buttonStyle(.plain)
+                                .transition(.scale(scale: 0.9).combined(with: .opacity))
+                            }
                         }
-                        .buttonStyle(.plain)
+                        .padding()
+                        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: searchText)
                     }
                 }
-                .padding()
             }
             .navigationTitle("Resources")
-            .background(Color(UIColor.systemGroupedBackground))
             .searchable(text: $searchText, prompt: "search")
-            
             .sheet(item: $selectedResource) { res in
                 ResourceDetailView(resource: res)
             }
