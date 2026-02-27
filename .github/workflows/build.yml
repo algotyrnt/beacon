@@ -1,0 +1,20 @@
+name: Build
+
+on:
+    pull_request:
+        branches: ["main"]
+
+jobs:
+    build:
+        runs-on: macos-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Build App
+              working-directory: Beacon.swiftpm
+              run: |
+                  xcodebuild -scheme Beacon \
+                             -destination 'platform=iOS Simulator,name=iPhone 16' \
+                             -sdk iphonesimulator \
+                             build
