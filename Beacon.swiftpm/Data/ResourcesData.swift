@@ -71,7 +71,7 @@ let resourcesData: [Resource] = [
     Resource(
         title: "Drowning Response",
         subtitle: "Safe Water Rescues",
-        icon: "drop.fill",
+        icon: "lifepreserver.fill",
         details: "Use the 'Reach or Throw, Don't Go' rule. Never jump into fast-moving floodwaters to save someone, as you will likely become a victim yourself.\n\nReach out with a long pole, branch, or rope, or throw a buoyant object like a life jacket or cooler. Once the person is on dry land, check for breathing and begin CPR immediately if they are unresponsive.\n\nReference: American Red Cross Water Safety"
     ),
     Resource(
