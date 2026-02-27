@@ -18,7 +18,7 @@ let package = Package(
             targets: ["AppModule"],
             bundleIdentifier: "com.algotyrnt.Beacon",
             teamIdentifier: "V2F9G4736H",
-            displayVersion: "1.1",
+            displayVersion: "1.2",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.cyan),
