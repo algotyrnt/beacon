@@ -13,41 +13,63 @@ struct BeaconView: View {
     @EnvironmentObject var vm: BeaconViewModel
     @EnvironmentObject var locationManager: LocationManager
     
+    @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
+    
     var body: some View {
-        ZStack(alignment: .bottom) {
+        Map(position: $cameraPosition) {
             
-            Map {
-                if let myLoc = locationManager.location {
-                    Annotation("Me",
-                               coordinate: myLoc.coordinate) {
-                        Circle()
-                            .fill(.blue)
-                            .frame(width: 20, height: 20)
-                    }
+            // Yourself
+            if let myLoc = locationManager.location {
+                Annotation("Me", coordinate: myLoc.coordinate) {
+                    Circle()
+                        .fill(.blue)
+                        .frame(width: 20, height: 20)
+                        .overlay(Circle().stroke(.white, lineWidth: 2))
+                        .shadow(radius: 2)
                 }
-                
-                // Peers
-                ForEach(vm.peers) { peer in
-                    Annotation(peer.name,
-                               coordinate: CLLocationCoordinate2D(
-                                latitude: peer.latitude,
-                                longitude: peer.longitude
-                               )) {
+            }
+            
+            // Peers
+            ForEach(vm.peers) { peer in
+                Annotation(peer.name, coordinate: CLLocationCoordinate2D(
+                    latitude: peer.latitude,
+                    longitude: peer.longitude
+                )) {
+                    ZStack {
                         Circle()
                             .fill(peer.status == .help ? .red : .orange)
                             .frame(width: 18, height: 18)
+                            .overlay(Circle().stroke(.white, lineWidth: 2))
+                            .shadow(radius: 2)
+                        
+                        if peer.status == .help {
+                            VStack(spacing: -2) {
+                                Text("HELP")
+                                    .font(.caption2.bold())
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(.red)
+                                    .foregroundStyle(.white)
+                                    .clipShape(Capsule())
+                                    .shadow(radius: 2)
+                                
+                                Image(systemName: "arrowtriangle.down.fill")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(.red)
+                            }
+                            .offset(y: -28)
+                        }
                     }
                 }
             }
-            .mapControls {
-                MapUserLocationButton()
-                MapCompass()
-            }
-            .ignoresSafeArea()
-            
+        }
+        .mapControls {
+            MapUserLocationButton()
+            MapCompass()
+        }
+        .safeAreaInset(edge: .bottom) {
             // Control Panel
             VStack(spacing: 12) {
-                
                 Button {
                     vm.toggleHelp()
                 } label: {
@@ -63,7 +85,6 @@ struct BeaconView: View {
                 Text("Nearby People: \(vm.peers.count)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                
             }
             .padding()
             .background(.ultraThinMaterial)
