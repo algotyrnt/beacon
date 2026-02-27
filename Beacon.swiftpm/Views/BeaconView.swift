@@ -44,7 +44,7 @@ struct BeaconView: View {
                         
                         if peer.status == .help {
                             VStack(spacing: -2) {
-                                Text("HELP")
+                                Text("HELP!!!")
                                     .font(.caption2.bold())
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
