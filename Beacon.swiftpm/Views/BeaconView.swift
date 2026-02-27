@@ -12,6 +12,7 @@ struct BeaconView: View {
     
     @EnvironmentObject var vm: BeaconViewModel
     @EnvironmentObject var locationManager: LocationManager
+    @EnvironmentObject var engine: BeaconEngine
     
     @State private var cameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
     
@@ -67,27 +68,71 @@ struct BeaconView: View {
             MapUserLocationButton()
             MapCompass()
         }
-        .safeAreaInset(edge: .bottom) {
-            // Control Panel
-            VStack(spacing: 12) {
-                Button {
-                    vm.toggleHelp()
-                } label: {
-                    Text(vm.myStatus == .help ? "Cancel Help" : "I Need Help")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(vm.myStatus == .help ? .gray : .red)
-                        .foregroundStyle(.white)
-                        .cornerRadius(16)
+        .blur(radius: engine.isRunning ? 0 : 8)
+        .allowsHitTesting(engine.isRunning)
+        .overlay {
+            if !engine.isRunning {
+                ZStack {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    
+                    VStack(spacing: 20) {
+                        Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                            .font(.system(size: 50))
+                            .foregroundStyle(.blue)
+                        
+                        Text("Beacon is Offline")
+                            .font(.title2.bold())
+                        
+                        Text("Activate beacon to view nearby people and broadcast your location.")
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal)
+                        
+                        Button {
+                            withAnimation(.spring()) {
+                                engine.start()
+                            }
+                        } label: {
+                            Text("Activate Beacon")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(.blue)
+                                .foregroundStyle(.white)
+                                .cornerRadius(16)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 10)
+                    }
+                    .padding(30)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 25))
+                    .padding(30)
                 }
-                
-                Text("Nearby People: \(vm.peers.count)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
             }
-            .padding()
-            .background(.ultraThinMaterial)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if engine.isRunning {
+                // Control Panel
+                VStack(spacing: 12) {
+                    Button {
+                        vm.toggleHelp()
+                    } label: {
+                        Text(vm.myStatus == .help ? "Cancel Help" : "I Need Help")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(vm.myStatus == .help ? .gray : .red)
+                            .foregroundStyle(.white)
+                            .cornerRadius(16)
+                    }
+                    
+                    Text("Nearby People: \(vm.peers.count)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+                .background(.ultraThinMaterial)
+            }
         }
     }
 }
