@@ -11,20 +11,24 @@ struct ResourceCard: View {
     let resource: Resource
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             Image(systemName: resource.icon)
-                .font(.system(size: 30))
+                .font(.system(size: 32))
                 .foregroundStyle(.blue)
             
             Text(resource.title)
                 .font(.headline)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
             
             Text(resource.subtitle)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
         }
-        .frame(maxWidth: .infinity)
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .cornerRadius(20)
     }
