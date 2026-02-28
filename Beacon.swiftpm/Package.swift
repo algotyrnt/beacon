@@ -27,9 +27,11 @@ let package = Package(
                 .phone
             ],
             supportedInterfaceOrientations: [
-                .portrait
+                 .portrait,
+                 .landscapeRight(.when(deviceFamilies: [.pad])),
+                 .landscapeLeft(.when(deviceFamilies: [.pad])),
+                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
-            requiresFullScreen: true,
             capabilities: [
                 .bluetoothAlways(purposeString: "Bluetooth allows Beacon to form an offline emergency network with nearby devices."),
                 .localNetwork(purposeString: "Local network access enables Beacon to share emergency data with nearby devices.", bonjourServiceTypes: ["_beacon-mesh._tcp", "_beacon-mesh._udp"]),
