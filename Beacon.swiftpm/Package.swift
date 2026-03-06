@@ -27,7 +27,10 @@ let package = Package(
                 .phone
             ],
             supportedInterfaceOrientations: [
-                .portrait
+                 .portrait,
+                 .landscapeRight(.when(deviceFamilies: [.pad])),
+                 .landscapeLeft(.when(deviceFamilies: [.pad])),
+                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
             ],
             capabilities: [
                 .bluetoothAlways(purposeString: "Bluetooth allows Beacon to form an offline emergency network with nearby devices."),
